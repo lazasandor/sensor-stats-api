@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -54,6 +55,10 @@ public class SensorDataLoader {
         } catch (IOException e) {
             throw new UncheckedIOException("Cannot read sensor data from " + location, e);
         }
+    }
+
+    public Set<String> findAllDeviceIds() {
+        return readingsByDevice.keySet();
     }
 
     public List<SensorReading> findByDeviceId(String deviceId) {
