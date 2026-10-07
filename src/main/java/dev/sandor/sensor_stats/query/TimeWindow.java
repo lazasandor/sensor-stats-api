@@ -1,5 +1,7 @@
 package dev.sandor.sensor_stats.query;
 
+import dev.sandor.sensor_stats.query.exception.InvalidTimeRangeException;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -7,7 +9,7 @@ import java.time.ZoneOffset;
 public record TimeWindow(Instant from, Instant to) {
     public TimeWindow {
         if (from != null && to != null && !from.isBefore(to)) {
-            throw new IllegalArgumentException("'from' must be before 'to'");
+            throw new InvalidTimeRangeException("Invalid time range: 'from' must be before 'to'");
         }
     }
 

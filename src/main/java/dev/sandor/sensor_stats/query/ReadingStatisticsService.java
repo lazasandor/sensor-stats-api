@@ -2,9 +2,8 @@ package dev.sandor.sensor_stats.query;
 
 import dev.sandor.sensor_stats.data.SensorDataLoader;
 import dev.sandor.sensor_stats.domain.SensorReading;
-import org.springframework.http.HttpStatus;
+import dev.sandor.sensor_stats.query.exception.UnknownDeviceException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.*;
@@ -42,8 +41,7 @@ public class ReadingStatisticsService {
                 .distinct().sorted().toList();
         List<String> unknown = ids.stream().filter(id -> !known.contains(id)).toList();
         if (!unknown.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Unknown device(s): " + String.join(", ", unknown));
+            throw new UnknownDeviceException(unknown);
         }
         return ids;
     }
