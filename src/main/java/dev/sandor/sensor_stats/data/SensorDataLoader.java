@@ -36,13 +36,13 @@ public class SensorDataLoader {
     }
 
     private SensorDataLoader(List<SensorReading> readings) {
-        this.readingsByDevice = readings.stream()
+        this.readingsByDevice = Map.copyOf(readings.stream()
                 .collect(Collectors.groupingBy(
                         SensorReading::deviceId,
                         Collectors.collectingAndThen(Collectors.toList(),
                                 list -> list.stream()
                                         .sorted(Comparator.comparing(SensorReading::measureTime))
-                                        .toList())));
+                                        .toList()))));
     }
 
     private static List<SensorReading> readCsv(Resource location) {
