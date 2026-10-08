@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- *  A single reading reported by a device at a time.
+ * A single reading reported by a device at a time.
  */
 public record SensorReading(
         String deviceId,
