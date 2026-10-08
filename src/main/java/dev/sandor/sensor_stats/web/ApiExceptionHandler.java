@@ -28,16 +28,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     ProblemDetail handleUnknownDeviceException(UnknownDeviceException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problemDetail.setTitle("Unknown device(s)");
-        problemDetail.setProperty("devideIds", ex.getDeviceIds());
+        problemDetail.setProperty("deviceIds", ex.getDeviceIds());
         return problemDetail;
     }
 
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(
-            TypeMismatchException e, HttpHeaders headers, HttpStatusCode status, WebRequest request){
+            TypeMismatchException e, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         String reason = NestedExceptionUtils.getMostSpecificCause(e).getMessage();
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
-                "Invalid values '" + e.getValue() + "' for parameter '" + e.getPropertyName() + "': " + reason);
+                "Invalid value '" + e.getValue() + "' for parameter '" + e.getPropertyName() + "': " + reason);
+        problemDetail.setTitle("Invalid parameter");
         return ResponseEntity.badRequest().body(problemDetail);
     }
 
