@@ -24,7 +24,9 @@ public class ReadingStatisticsService {
                                             Statistic statistic) {
         TimeWindow requested = new TimeWindow(from, to);
         Statistic resolvedStatistic = statistic != null ? statistic : Statistic.AVG;
-        List<Metric> resolvedMetrics = metrics != null ? metrics : List.of(Metric.TEMPERATURE, Metric.HUMIDITY);
+        List<Metric> resolvedMetrics = (metrics != null && !metrics.isEmpty())
+                ? metrics.stream().distinct().toList()
+                : List.of(Metric.values());
 
         List<DeviceResult> devices = resolveDevices(deviceIds).stream()
                 .map(id -> forDevice(id, requested, resolvedMetrics, resolvedStatistic))
@@ -34,11 +36,17 @@ public class ReadingStatisticsService {
 
     private List<String> resolveDevices(List<String> requested) {
         Set<String> known = loader.findAllDeviceIds();
-        if (requested == null || requested.isEmpty()) {
+        List<String> ids = requested == null ? List.of() : requested.stream()
+                .map(String::trim)
+                .filter(id -> !id.isEmpty())
+                .distinct()
+                .sorted()
+                .toList();
+
+        if (ids.isEmpty()) {
             return known.stream().sorted().toList();
         }
-        List<String> ids = requested.stream().map(String::trim).filter(s -> !s.isEmpty())
-                .distinct().sorted().toList();
+
         List<String> unknown = ids.stream().filter(id -> !known.contains(id)).toList();
         if (!unknown.isEmpty()) {
             throw new UnknownDeviceException(unknown);
@@ -121,9 +129,14 @@ public class ReadingStatisticsService {
         return Math.round(v * 100) / 100.0;
     }
 
-    public record StatisticsResult(String statistic, List<DeviceResult> devices) {}
+    public record StatisticsResult(String statistic, List<DeviceResult> devices) {
+    }
+
     public record DeviceResult(String deviceId, Instant from, Instant to,
-                               int readingCount, Map<String, MetricResult> metrics) {}
-    public record MetricResult(Double value, String unit, long sampleCount) {}
+                               int readingCount, Map<String, MetricResult> metrics) {
+    }
+
+    public record MetricResult(Double value, String unit, long sampleCount) {
+    }
 
 }
