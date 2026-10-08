@@ -1,5 +1,8 @@
 package dev.sandor.sensor_stats.query;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * Statistics that can be queried for readings.
  */
@@ -8,9 +11,13 @@ public enum Statistic {
 
     private final String key;
 
-    Statistic(String key) { this.key = key; }
+    Statistic(String key) {
+        this.key = key;
+    }
 
-    public String key() { return key; }
+    public String key() {
+        return key;
+    }
 
     public static Statistic fromKey(String key) {
         for (Statistic statistic : values()) {
@@ -18,6 +25,12 @@ public enum Statistic {
                 return statistic;
             }
         }
-        throw new IllegalArgumentException("Unknown statistic: '" + key + "'");
+        throw new IllegalArgumentException("Unknown statistic: '" + key + "' allowed values: " + allowedValues());
+    }
+
+    private static String allowedValues() {
+        return Arrays.stream(values())
+                .map(Statistic::key)
+                .collect(Collectors.joining(", "));
     }
 }

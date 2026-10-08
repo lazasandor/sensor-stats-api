@@ -1,5 +1,8 @@
 package dev.sandor.sensor_stats.query;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * Metrics that can be queried for statistics.
  */
@@ -29,6 +32,12 @@ public enum Metric {
                 return metric;
             }
         }
-        throw new IllegalArgumentException("Unknown metric: '" + key + "'");
+        throw new IllegalArgumentException("Unknown metric: '" + key + "' allowed values: " + allowedValues());
+    }
+
+    private static String allowedValues() {
+        return Arrays.stream(values())
+                .map(Metric::key)
+                .collect(Collectors.joining(", "));
     }
 }
