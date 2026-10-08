@@ -113,6 +113,41 @@ Errors are returned as [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) proble
 }
 ```
 
+## Design decisions
+
+The task leaves some behaviour open; these are the choices I made and why.
+
+- **Statistics are calculated per device.** Merging the readings of different devices into one
+  number is rarely meaningful and would hide which device behaves differently.
+- **Temperatures are converted to Celsius when the data is loaded.** The data mixes Celsius and
+  Fahrenheit, so aggregating the raw values would be wrong. Converting once at load time means the
+  query logic never has to deal with units. All temperatures in responses are in °C.
+- **Missing values are not zeros.** An empty humidity is stored as `null` and left out of the
+  calculation, so it cannot distort the average or the minimum. A metric without samples returns
+  `value: null`.
+- **"Latest available data" is the most recent UTC calendar day on which each device reported.**
+  It is evaluated per device because devices report at different times: with a single global
+  "latest day" (11 July in the sample) device 2 would return no data at all. A day rather than
+  the single last reading, because min / max / avg of one value is not a meaningful statistic.
+  The window used is returned in `from` / `to`, so the behaviour is visible to the client.
+- **Time ranges are half-open: `from` is inclusive, `to` is exclusive.** Consecutive ranges never
+  count a reading twice, and a whole day is simply `[day 00:00, next day 00:00)`. Giving only one
+  bound is allowed.
+- **An empty time range is not an error** (it returns `readingCount: 0`), but **an unknown device
+  is (404)**: a mistyped ID should not look like a device without data.
+- **Invalid data stops the application at startup (fail fast).** A missing CSV column or an invalid
+  row (bad date, unknown unit, non-numeric value, humidity outside 0–100) fails the startup with
+  the line number in the error. For a static data file I prefer to find out immediately rather than
+  serve partial data silently. For a live data feed I would skip and log invalid rows instead.
+- **CSV columns are matched by header name, not by position.** A hand-written parser is used
+  because the format is simple (no quoted fields); with quoting or embedded separators I would
+  switch to a CSV library.
+- **The data is loaded once and kept immutable in memory**, grouped by device and sorted by time.
+  Requests only read it, so no synchronisation is needed.
+- **Jackson 2.x is aligned with the Jackson BOM.** Spring Boot 4 itself uses Jackson 3; Jackson 2 is
+  only pulled in by springdoc. The BOM pins every Jackson 2 module to a patched version without
+  making them direct dependencies.
+
 ## Project structure
 
 ```
@@ -128,3 +163,13 @@ src/main/java/dev/sandor/sensor_stats
 
 The integration tests use their own fixture file (`src/test/resources/test-readings.csv`),
 so changing the production data does not break them.
+
+## Limitations and possible next steps
+
+- The whole dataset is held in memory. For large or continuously arriving data I would store the
+  readings in a database.
+- `SensorDataLoader` both loads and stores the data. With a database I would put the storage behind
+  a repository interface.
+- Temperatures are always returned in Celsius; an output unit parameter would be easy to add.
+- Other statistics (median, percentiles), authentication, caching and pagination are out of scope
+  for this proof of concept.
