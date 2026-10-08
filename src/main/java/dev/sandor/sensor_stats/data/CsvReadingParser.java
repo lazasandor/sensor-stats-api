@@ -46,7 +46,6 @@ public class CsvReadingParser {
                 } catch (IllegalArgumentException | DateTimeParseException e) {
                     throw new IllegalArgumentException("Error parsing line " + lineNumber + ": " + e.getMessage(), e);
                 }
-                readings.add(parseRow(line, columns));
             }
 
             return readings;
