@@ -45,12 +45,12 @@ public class StatisticsController {
             @Parameter(description = "End of the range, exclusive.", example = "2026-07-11T00:00:00Z")
             @RequestParam(required = false) Instant to,
 
-            @Parameter(description = "Metrics to include.",
-                    array = @ArraySchema(schema = @Schema(allowableValues = {"min", "humidity"})))
+            @Parameter(description = "Metrics to include (default is all).",
+                    array = @ArraySchema(schema = @Schema(allowableValues = {"temperature", "humidity"})))
             @RequestParam(required = false) List<Metric> metrics,
 
             @Parameter(description = "Statistic to compute.",
-                    array = @ArraySchema(schema = @Schema(allowableValues = {"min", "max", "avg"}, defaultValue = "avg")))
+                    schema = @Schema(allowableValues = {"min", "max", "avg"}, defaultValue = "avg"))
             @RequestParam(required = false) Statistic statistic
     ) {
         return statisticsService.queryStatistics(
