@@ -49,7 +49,7 @@ public class StatisticsController {
                     array = @ArraySchema(schema = @Schema(allowableValues = {"temperature", "humidity"})))
             @RequestParam(required = false) List<Metric> metrics,
 
-            @Parameter(description = "Statistic to compute.",
+            @Parameter(description = "Statistic to compute (default is avg).",
                     schema = @Schema(allowableValues = {"min", "max", "avg"}, defaultValue = "avg"))
             @RequestParam(required = false) Statistic statistic
     ) {
