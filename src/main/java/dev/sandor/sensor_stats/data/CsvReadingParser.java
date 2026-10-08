@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -19,6 +20,9 @@ public class CsvReadingParser {
     static final String TEMPERATURE = "Temperature";
     static final String TEMP_UNIT = "TempUnit";
     static final String HUMIDITY = "Humidity";
+
+    private static final List<String> REQUIRED_COLUMNS =
+            List.of(DEVICE_ID, MEASURE_TIME, TEMPERATURE, TEMP_UNIT, HUMIDITY);
 
     public List<SensorReading> parse(BufferedReader reader) {
         try {
@@ -37,6 +41,11 @@ public class CsvReadingParser {
 
                 if (line.isBlank()) continue;
 
+                try {
+                    readings.add(parseRow(line, columns));
+                } catch (IllegalArgumentException | DateTimeParseException e) {
+                    throw new IllegalArgumentException("Error parsing line " + lineNumber + ": " + e.getMessage(), e);
+                }
                 readings.add(parseRow(line, columns));
             }
 
@@ -106,6 +115,13 @@ public class CsvReadingParser {
 
         for (int i = 0; i < headers.length; i++) {
             columns.put(headers[i].trim(), i);
+        }
+
+        List<String> missing = REQUIRED_COLUMNS.stream()
+                .filter(col -> !columns.containsKey(col))
+                .toList();
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException("Missing required columns: " + missing);
         }
 
         return columns;
