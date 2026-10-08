@@ -5,6 +5,8 @@ import dev.sandor.sensor_stats.query.ReadingStatisticsService;
 import dev.sandor.sensor_stats.query.Statistic;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,10 +45,12 @@ public class StatisticsController {
             @Parameter(description = "End of the range, exclusive.", example = "2026-07-11T00:00:00Z")
             @RequestParam(required = false) Instant to,
 
-            @Parameter(description = "Metrics to include (default is both).")
+            @Parameter(description = "Metrics to include.",
+                    array = @ArraySchema(schema = @Schema(allowableValues = {"min", "humidity"})))
             @RequestParam(required = false) List<Metric> metrics,
 
-            @Parameter(description = "Statistic to compute (default is avg).")
+            @Parameter(description = "Statistic to compute.",
+                    array = @ArraySchema(schema = @Schema(allowableValues = {"min", "max", "avg"}, defaultValue = "avg")))
             @RequestParam(required = false) Statistic statistic
     ) {
         return statisticsService.queryStatistics(
